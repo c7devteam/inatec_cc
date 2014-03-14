@@ -60,9 +60,6 @@ module ActiveMerchant #:nodoc:
         signature = Digest::SHA1.hexdigest(sorted_param_values + options[:secret]).downcase
       end
 
-      def add_secret_to_parameters(post)
-      end
-
       def add_customer_data(post, options)
       end
 
@@ -72,10 +69,19 @@ module ActiveMerchant #:nodoc:
       def add_invoice(post, money, options)
         post[:amount] = amount(money)
         post[:currency] = (options[:currency] || currency(money))
+        post[:paymeny_method] = 1 
+        post[:"Orderid"] = 1
+
       end
 
       def add_payment(post, payment)
+        post[:ccn] = payment.number
+        post[:exp_month] = payment.month
+        post[:exp_year] = payment.year
+        post[:cvc_code] = payment.verification_value
+        post[:cardholder_name] = "#{payment.first_name} #{payment.last_name}"
       end
+
 
       def parse(body)
         {}
