@@ -1,9 +1,8 @@
-  
 module ActiveMerchant #:nodoc:
   module Billing #:nodoc:
     class InatecGateway < Gateway
       self.test_url = 'https://www.taurus21.com/pay'
-      self.live_url = 'https://example.com/live'
+      self.live_url = 'https://www.taurus21.com/pay'
 
       #self.supported_countries = ['US']
       self.default_currency = 'EUR'
@@ -83,9 +82,8 @@ module ActiveMerchant #:nodoc:
       end
 
       def commit(action, parameters)
-        url = (test? ? test_url : live_url)
-        response = parse(ssl_post(url, post_data(action, parameters)))
-
+        response = parse(ssl_post(combine_url(action, parameters), ""))
+        binding.pry
         Response.new(
           success_from(response),
           message_from(response),
@@ -104,7 +102,12 @@ module ActiveMerchant #:nodoc:
       def authorization_from(response)
       end
 
-      def post_data(action, parameters = {})
+      def combine_url(action, parameters = {})
+        url = (test? ? test_url : live_url)
+        encoded_params = URI.encode_www_form(parameters)
+        uri = URI("#{url}#{action}?#{encoded_params}")
+        puts uri
+        uri
       end
 
       def encode_parameters(parameters)
