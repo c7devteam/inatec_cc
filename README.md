@@ -22,11 +22,48 @@ Please refer to https://github.com/Shopify/active_merchant to understand basic a
 
 Inatec specific methods:
 
-    ```ruby
     # Purchase
-    
-       
-    ```
+    def initialize(options={})
+      requires!(options, :merchant_id, :secret)
+      super
+    end
+  
+    def purchase(money, payment, options={})
+      post = {}
+      add_invoice(post, money, options)
+      add_payment(post, payment)
+      add_address(post, payment, options)
+      add_customer_data(post, options)
+      add_config_data(post)
+      commit('backoffice/payment_authorize', post)
+    end
+  
+    def capture(options={})
+      post = {}
+      add_capture_params(post, options)
+      add_config_data(post)
+      commit('backoffice/payment_capture', post)
+    end
+  
+    def authorize(money, payment, options={})
+      post = {}
+      add_invoice(post, money, options)
+      add_payment(post, payment)
+      add_address(post, payment, options)
+      add_customer_data(post, options)
+      add_config_data(post)
+      commit('backoffice/payment_preauthorize', post)
+    end
+  
+  
+    def refund(money, options={})
+      post = {}
+      add_refund_params(post, money, options)
+      add_config_data(post)
+      commit('backoffice/payment_refund', post)
+    end
+
+
 
 
 # Create a new credit card object
