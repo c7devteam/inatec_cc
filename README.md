@@ -1,6 +1,6 @@
-# ActiveMerchantInatec
+# ActiveMerchant Inatec Gateway
 
-TODO: Write a gem description
+Active Merchant inatec payment gateway. 
 
 ## Installation
 
@@ -17,8 +17,6 @@ Or install it yourself as:
     $ gem install active_merchant_inatec
 
 ## Usage
-
-TODO: Write usage instructions here
 
 ## Contributing
 
