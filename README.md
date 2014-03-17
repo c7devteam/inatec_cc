@@ -22,7 +22,7 @@ Please refer to https://github.com/Shopify/active_merchant to understand basic a
 
 Inatec specific methods:
 
-    ```ruby
+```ruby
     # Purchase
     def initialize(options={})
       requires!(options, :merchant_id, :secret)
@@ -63,7 +63,7 @@ Inatec specific methods:
       add_config_data(post)
       commit('backoffice/payment_refund', post)
     end
-
+```
 
 
 
