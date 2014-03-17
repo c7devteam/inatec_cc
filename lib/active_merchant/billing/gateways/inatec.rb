@@ -26,6 +26,13 @@ module ActiveMerchant #:nodoc:
         commit('backoffice/payment_authorize', post)
       end
 
+      def capture(options={})
+        post = {}
+        add_capture_params(post, options)
+        add_config_data(post)
+        commit('backoffice/payment_capture', post)
+      end
+
       def authorize(money, payment, options={})
         post = {}
         add_invoice(post, money, options)
@@ -33,19 +40,15 @@ module ActiveMerchant #:nodoc:
         add_address(post, payment, options)
         add_customer_data(post, options)
         add_config_data(post)
-        commit('backoffice/payment_authorize', post)
+        commit('backoffice/payment_preauthorize', post)
       end
 
-      def capture(money, authorization, options={})
-        commit('backoffice/payment_capture', post)
-      end
 
-      def refund(money, authorization, options={})
+      def refund(money, options={})
+        post = {}
+        add_refund_params(post, money, options)
+        add_config_data(post)
         commit('backoffice/payment_refund', post)
-      end
-
-      def void(authorization, options={})
-        commit('void', post)
       end
 
       private
@@ -90,6 +93,15 @@ module ActiveMerchant #:nodoc:
         post[:cardholder_name] = "#{payment.first_name} #{payment.last_name}"
       end
 
+      def add_capture_params(post, options)
+        post[:transactionid] = options[:transaction_id]
+      end
+
+      def add_refund_params(post,money, options)
+        post[:transactionid] = options[:transaction_id]
+        post[:price] = amount(money)
+      end
+
       def commit(action, parameters)
         response = parse(ssl_post(combine_url(action),encode_parameters(parameters)))
         Response.new(
@@ -115,15 +127,14 @@ module ActiveMerchant #:nodoc:
       end
 
       def success_from(response)
-        %w(0 2000).include?(response["status"][0])
+        %w(0 2000).include?(response["status"].first)
       end
 
       def message_from(response)
-
+        response["errormessage"].first
       end
 
       def authorization_from(response)
-
       end
     end
   end

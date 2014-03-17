@@ -1,12 +1,20 @@
 require "spec_helper"
-require "pry"
 
 describe ActiveMerchant::Billing::InatecGateway do
+
+  before do
+    ActiveMerchant::Billing::Base.mode = :test
+  end
+
+  # Preauthorize
+  # 
+  # Capture
+  # 
   let(:credit_card) do
     defaults = {
       number: "5232050000010003",
       month: 12,
-      year: Time.now.year,
+      year: Time.local(2014).year,
       first_name: 'Muster',
       last_name: 'Mann',
       verification_value: '003',
@@ -32,23 +40,82 @@ describe ActiveMerchant::Billing::InatecGateway do
       }
     }
   end
+
   let(:credentials) do
-    path = Path.join("spec", "fixtures", "credentials.yml")
-    YAML.parse(File.read(path))
+    path = File.join("spec", "fixtures", "credentials.yml")
+    creds = YAML.load(File.read(path))
+    {merchant_id: creds["merchant_id"], secret: creds["secret"]} # Gateway works with symbols
   end
 
-  let(:amount) {1.00}
+  let(:amount) {123}
 
   subject do
     ActiveMerchant::Billing::InatecGateway.new(credentials)
   end
 
   describe "Purchase" do
-    it "captures funds" do
+    before do
+      stub_request(:post, "https://www.taurus21.com/pay/backoffice/payment_authorize")
+        .to_return(status: 200, body: "transactionid=43327070&transid=43327070&status=0&errormessage=&errmsg=&amount=1.23&price=1.23&currency=EUR&orderid=1&user_id=7462847")
+    end
+    it "Creates a purchase" do
       response = subject.purchase(amount, credit_card, options)
       expect(response).to be_success
       expect(response).to be_test
     end
   end
 
+  describe "Authorize" do
+    before do
+      stub_request(:post, "https://www.taurus21.com/pay/backoffice/payment_preauthorize")
+        .to_return(status: 200, body: "transactionid=43327070&transid=43327070&status=0&errormessage=&errmsg=&amount=1.23&price=1.23&currency=EUR&orderid=1&user_id=7462847")
+    end
+
+    it "authorizes payment" do
+      response = subject.authorize(amount, credit_card, options)
+      expect(response).to be_success
+      expect(response).to be_test
+    end
+
+  end
+
+  describe "Payment capture" do
+    before do
+      stub_request(:post, "https://www.taurus21.com/pay/backoffice/payment_capture")
+        .to_return(status: 200, body: "transactionid=43328376&transid=43328376&status=0&errormessage=&errmsg=&amount=1.23&price=1.23&currency=EUR&orderid=1")
+    end
+
+    it "captures payment" do
+      response = subject.capture({transaction_id: "12312312"})
+      expect(response).to be_success
+      expect(response).to be_test
+    end
+  end
+
+  describe "Payment refund" do
+    before do
+      stub_request(:post, "https://www.taurus21.com/pay/backoffice/payment_refund")
+        .to_return(status: 200, body: "transactionid=43328589&transid=43328589&status=0&errormessage=&errmsg=&amount=1.23&price=1.23&currency=EUR&orderid=1")
+    end
+
+    it "captures payment" do
+      response = subject.refund(amount, {transaction_id: "43328589"})
+      expect(response).to be_success
+      expect(response).to be_test
+    end
+  end
+
+  describe "Errors in parameters" do
+    before do
+      stub_request(:post, "https://www.taurus21.com/pay/backoffice/payment_refund")
+        .to_return(status: 200, body: "transactionid=&transid=&status=101&errormessage=Some+Bad+Stuff+Happened&errmsg=&amount=&currency=EUR&orderid=")
+    end
+
+    it "captures payment" do
+      response = subject.refund(amount, {transaction_id: "43328589"})
+      expect(response).not_to be_success
+      expect(response).to be_test
+      expect(response.message).to eq("Some Bad Stuff Happened")
+    end
+  end
 end
