@@ -1,6 +1,6 @@
 # ActiveMerchant Inatec Gateway
 
-Active Merchant inatec payment gateway. 
+Active Merchant Inatec payment gateway. http://inatec.com/ 
 
 ## Installation
 
@@ -37,8 +37,8 @@ credit_card =
       brand: 'master_card'
     })
 
-# To initialize inatec gateway, you need to pass merchant id (Payment id in credentials document provided by
-# inatec) and secret
+# To initialize inatec gateway, you need to pass merchant id (Payment id in credentials 
+# document provided by inatec) and secret
 
 gw = ActiveMerchant::Gateways::Inatec.new(merchant_id: "your_merch_id", secret: "your_secret")
 
