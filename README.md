@@ -1,6 +1,6 @@
 # ActiveMerchant Inatec Gateway
 
-Active Merchant inatec payment gateway. 
+Active Merchant Inatec payment gateway. http://inatec.com/ 
 
 ## Installation
 
@@ -22,12 +22,70 @@ Please refer to https://github.com/Shopify/active_merchant to understand basic a
 
 Inatec specific methods:
 
-    ```ruby
-    # Purchase
-    
-       
-    ```
+```ruby
 
+# This gem is using active merchants built in credit card DTO
+
+credit_card = 
+    ActiveMerchant::Billing::CreditCard.new({
+      number: "5232051231210003",
+      month: 12,
+      year: Time.local(2014).year,
+      first_name: 'Muster',
+      last_name: 'Mann',
+      verification_value: '003',
+      brand: 'master_card'
+    })
+
+# To initialize inatec gateway, you need to pass merchant id (Payment id in credentials 
+# document provided by inatec) and secret
+
+gw = ActiveMerchant::Gateways::Inatec.new(merchant_id: "your_merch_id", secret: "your_secret")
+
+# The Authorize request will send an authorization request to the authorization system, which will verify the
+# credit card data and credit line. If the request is verified, the credit card will be charged immediately.
+
+amount = 100 # cents
+
+# All these values are mandatory
+options = {
+  order_id: '1',
+  ip: '10.0.0.1',
+  first_name: "Muster",
+  last_name: "Mann",
+  description: 'ActiveMerchant Test Purchase',
+  email: 'wow@example.com',
+  currency: "EUR",
+  address: {
+    zip: '3301',
+    street: "Grants street",
+    city: "Kuldiga",
+    country: "LVA"
+  }
+}
+
+# To make a authorize request you will need to pass amount in cents, active merchants
+# credit card class instance and options as seen above with your values. 
+gw.authorize(amount, credit_card, options)
+
+# The Preauthorize request will send an authorization request to the authorization system, which will verifythe
+# credit card data, credit line, and reserve the requested amount. 
+
+# Preauthorize uses the same parameters as authorize requests
+gw.preauthorize(amount, credit_card, options)
+
+
+# The Capture request follows a successful Preauthorize request. The request will send an authorization request
+# to the authorization system, which will book the amount previously reserved by the Preauthorize request and
+# the customer’s credit card will then be charged. 
+
+# Capture requires transaction id to complete book amount
+gw.capture(transaction_id: "123456")
+
+# Refund requires transaction id and amount in cents to refund purchase
+gw.capture(transaction_id: "123456", amount: 123 )
+
+```
 
 # Create a new credit card object
 
