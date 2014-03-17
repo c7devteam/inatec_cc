@@ -16,7 +16,7 @@ module ActiveMerchant #:nodoc:
         super
       end
 
-      def purchase(money, payment, options={})
+      def authorize(money, payment, options={})
         post = {}
         add_invoice(post, money, options)
         add_payment(post, payment)
@@ -26,14 +26,7 @@ module ActiveMerchant #:nodoc:
         commit('backoffice/payment_authorize', post)
       end
 
-      def capture(options={})
-        post = {}
-        add_capture_params(post, options)
-        add_config_data(post)
-        commit('backoffice/payment_capture', post)
-      end
-
-      def authorize(money, payment, options={})
+      def preauthorize(money, payment, options={})
         post = {}
         add_invoice(post, money, options)
         add_payment(post, payment)
@@ -43,6 +36,12 @@ module ActiveMerchant #:nodoc:
         commit('backoffice/payment_preauthorize', post)
       end
 
+      def capture(options={})
+        post = {}
+        add_capture_params(post, options)
+        add_config_data(post)
+        commit('backoffice/payment_capture', post)
+      end
 
       def refund(money, options={})
         post = {}
