@@ -21,6 +21,7 @@ Or install it yourself as:
 Please refer to https://github.com/Shopify/active_merchant to understand basic active merchant flow.
 
 Inatec specific methods:
+
     ```ruby
     # Purchase
     def initialize(options={})
