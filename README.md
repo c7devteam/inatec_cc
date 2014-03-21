@@ -83,11 +83,9 @@ gw.preauthorize(amount, credit_card, options)
 gw.capture(transaction_id: "123456")
 
 # Refund requires transaction id and amount in cents to refund purchase
-gw.capture(transaction_id: "123456", amount: 123 )
+gw.refund(transaction_id: "123456", amount: 123 )
 
 ```
-
-# Create a new credit card object
 
 ## Contributing
 
