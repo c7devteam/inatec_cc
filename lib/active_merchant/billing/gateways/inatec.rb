@@ -20,7 +20,7 @@ module ActiveMerchant #:nodoc:
         post = {}
         add_invoice(post, money, options)
         add_payment(post, payment)
-        add_address(post, payment, options)
+        add_address(post, options)
         add_customer_data(post, options)
         add_config_data(post)
         commit('backoffice/payment_authorize', post)
@@ -30,9 +30,19 @@ module ActiveMerchant #:nodoc:
         post = {}
         add_invoice(post, money, options)
         add_payment(post, payment)
-        add_address(post, payment, options)
+        add_address(post, options)
         add_customer_data(post, options)
         add_recurring_params(post, options)
+        add_config_data(post)
+        commit('backoffice/payment_authorize', post)
+      end
+
+      def charge_recurring(money, recurring_id, options={})
+        post = {}
+        add_invoice(post, money, options)
+        add_recurring_id(post, recurring_id)
+        add_address(post, options)
+        add_customer_data(post, options)
         add_config_data(post)
         commit('backoffice/payment_authorize', post)
       end
@@ -41,7 +51,7 @@ module ActiveMerchant #:nodoc:
         post = {}
         add_invoice(post, money, options)
         add_payment(post, payment)
-        add_address(post, payment, options)
+        add_address(post, options)
         add_customer_data(post, options)
         add_recurring_params(post, options)
         add_config_data(post)
@@ -69,11 +79,6 @@ module ActiveMerchant #:nodoc:
         post[:signature] = generate_signature(post)
       end
 
-      def add_other_options(post)
-        post[:recurring_id] = options[:merchant_id]
-        post[:signature] = generate_signature(post)
-      end
-
       def generate_signature(post)
         sorted_param_values =  post.map{|k,v| [k.downcase, v]}.sort.map{|a| a[1]}.join("")
         sorted_param_values << options[:secret]
@@ -87,7 +92,7 @@ module ActiveMerchant #:nodoc:
         post[:customerip] = options.fetch(:ip) {|k| raise KeyError.new("missing parameter: #{k}")}
       end
 
-      def add_address(post, creditcard, options)
+      def add_address(post, options)
         post[:street] = options.fetch(:address, {}).fetch(:street) {|k| raise KeyError.new("missing parameter in address: #{k}")}
         post[:zip] = options.fetch(:address, {}).fetch(:zip) {|k| raise KeyError.new("missing parameter in address: #{k}")}
         post[:city] = options.fetch(:address, {}).fetch(:city) {|k| raise KeyError.new("missing parameter in address: #{k}")}
@@ -107,6 +112,10 @@ module ActiveMerchant #:nodoc:
         post[:exp_year] = payment.year
         post[:cvc_code] = payment.verification_value
         post[:cardholder_name] = "#{payment.first_name} #{payment.last_name}"
+      end
+
+      def add_recurring_id(post, recurring_id)
+        post[:recurring_id] = recurring_id
       end
 
       def add_recurring_params(post, options)
