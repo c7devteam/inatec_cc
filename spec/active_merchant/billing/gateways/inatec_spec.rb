@@ -32,6 +32,7 @@ describe ActiveMerchant::Billing::InatecGateway do
       description: 'ActiveMerchant Test Purchase',
       email: 'wow@example.com',
       currency: "EUR",
+      recurring_id: '123',
       address: {
         zip: '3301',
         street: "Grants street",
@@ -44,7 +45,7 @@ describe ActiveMerchant::Billing::InatecGateway do
   let(:credentials) do
     path = File.join("spec", "fixtures", "credentials.yml")
     creds = YAML.load(File.read(path))
-    {merchant_id: creds["merchant_id"], secret: creds["secret"]} # Gateway works with symbols
+    {merchant_id: '21', secret: '123'} # Gateway works with symbols
   end
 
   let(:amount) {123}
@@ -60,6 +61,18 @@ describe ActiveMerchant::Billing::InatecGateway do
     end
     it "Creates a authorize request" do
       response = subject.authorize(amount, credit_card, options)
+      expect(response).to be_success
+      expect(response).to be_test
+    end
+  end
+
+  describe "Authorize with recurring" do
+    before do
+      stub_request(:post, "https://www.taurus21.com/pay/backoffice/payment_authorize")
+        .to_return(status: 200, body: "transactionid=43327070&transid=43327070&status=0&errormessage=&errmsg=&amount=1.23&price=1.23&currency=EUR&orderid=1&user_id=7462847")
+    end
+    it "Creates a authorize request" do
+      response = subject.authorize_with_recurring(amount, credit_card, options)
       expect(response).to be_success
       expect(response).to be_test
     end

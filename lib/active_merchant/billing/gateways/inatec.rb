@@ -26,12 +26,24 @@ module ActiveMerchant #:nodoc:
         commit('backoffice/payment_authorize', post)
       end
 
+      def authorize_with_recurring(money, payment, options={})
+        post = {}
+        add_invoice(post, money, options)
+        add_payment(post, payment)
+        add_address(post, payment, options)
+        add_customer_data(post, options)
+        add_recurring_params(post, options)
+        add_config_data(post)
+        commit('backoffice/payment_authorize', post)
+      end
+
       def preauthorize(money, payment, options={})
         post = {}
         add_invoice(post, money, options)
         add_payment(post, payment)
         add_address(post, payment, options)
         add_customer_data(post, options)
+        add_recurring_params(post, options)
         add_config_data(post)
         commit('backoffice/payment_preauthorize', post)
       end
@@ -54,6 +66,11 @@ module ActiveMerchant #:nodoc:
 
       def add_config_data(post)
         post[:merchantid] = options[:merchant_id]
+        post[:signature] = generate_signature(post)
+      end
+
+      def add_other_options(post)
+        post[:recurring_id] = options[:merchant_id]
         post[:signature] = generate_signature(post)
       end
 
@@ -90,6 +107,10 @@ module ActiveMerchant #:nodoc:
         post[:exp_year] = payment.year
         post[:cvc_code] = payment.verification_value
         post[:cardholder_name] = "#{payment.first_name} #{payment.last_name}"
+      end
+
+      def add_recurring_params(post, options)
+        post[:recurring_id] = "INIT"
       end
 
       def add_capture_params(post, options)
