@@ -108,7 +108,7 @@ module ActiveMerchant #:nodoc:
 
       def add_payment(post, payment)
         post[:ccn] = payment.number
-        post[:exp_month] = payment.month
+        post[:exp_month] = payment.month.to_s.rjust(2, '0')
         post[:exp_year] = payment.year
         post[:cvc_code] = payment.verification_value
         post[:cardholder_name] = "#{payment.first_name} #{payment.last_name}"
