@@ -12,6 +12,7 @@ module ActiveMerchant #:nodoc:
       self.display_name = 'Inatec'
 
       def initialize(options={})
+        options[:param_3d] ||= 'non3d'
         requires!(options, :merchant_id, :secret)
         super
       end
@@ -72,17 +73,20 @@ module ActiveMerchant #:nodoc:
         commit('backoffice/payment_refund', post)
       end
 
+      def generate_signature(post)
+        sorted_param_values = post.map{|k,v| [k.downcase, v]}.sort.map{|a| a[1]}.join('')
+        sorted_param_values << options[:secret]
+        signature = Digest::SHA1.hexdigest(sorted_param_values).downcase
+      end
+
       private
 
       def add_config_data(post)
         post[:merchantid] = options[:merchant_id]
+        post[:param_3d] = options[:param_3d] if options[:param_3d]
+        post[:url_return] = options[:url_return] if options[:url_return]
+        post[:custom1] = options[:custom1] if options[:custom1]
         post[:signature] = generate_signature(post)
-      end
-
-      def generate_signature(post)
-        sorted_param_values =  post.map{|k,v| [k.downcase, v]}.sort.map{|a| a[1]}.join("")
-        sorted_param_values << options[:secret]
-        signature = Digest::SHA1.hexdigest(sorted_param_values).downcase
       end
 
       def add_customer_data(post, options)
@@ -146,7 +150,7 @@ module ActiveMerchant #:nodoc:
         CGI::parse(body)
       end
 
-      def combine_url(action, parameters = {})
+      def combine_url(action, parameters={})
         url = (test? ? test_url : live_url)
         "#{url}#{action}"
       end

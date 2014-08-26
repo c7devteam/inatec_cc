@@ -1,7 +1,6 @@
-require "spec_helper"
+require 'spec_helper'
 
 describe ActiveMerchant::Billing::InatecGateway do
-
   before do
     ActiveMerchant::Billing::Base.mode = :test
   end
@@ -27,17 +26,17 @@ describe ActiveMerchant::Billing::InatecGateway do
     {
       order_id: '1',
       ip: '10.0.0.1',
-      first_name: "Muster",
-      last_name: "Mann",
+      first_name: 'Muster',
+      last_name: 'Mann',
       description: 'ActiveMerchant Test Purchase',
       email: 'wow@example.com',
-      currency: "EUR",
+      currency: 'EUR',
       recurring_id: '123',
       address: {
         zip: '3301',
-        street: "Grants street",
-        city: "Kuldiga",
-        country: "LVA"
+        street: 'Grants street',
+        city: 'Kuldiga',
+        country: 'LVA'
       }
     }
   end
@@ -45,10 +44,10 @@ describe ActiveMerchant::Billing::InatecGateway do
   let(:credentials) do
     path = File.join("spec", "fixtures", "credentials.yml")
     creds = YAML.load(File.read(path))
-    {merchant_id: '21', secret: '123'} # Gateway works with symbols
+    { merchant_id: '21', secret: '123' } # Gateway works with symbols
   end
 
-  let(:amount) {123}
+  let(:amount) { 123 }
 
   subject do
     ActiveMerchant::Billing::InatecGateway.new(credentials)
@@ -89,7 +88,6 @@ describe ActiveMerchant::Billing::InatecGateway do
       expect(response).to be_success
       expect(response).to be_test
     end
-
   end
 
   describe "Capture" do
@@ -99,7 +97,7 @@ describe ActiveMerchant::Billing::InatecGateway do
     end
 
     it "captures preauthorized payment" do
-      response = subject.capture({transaction_id: "12312312"})
+      response = subject.capture({ transaction_id: "12312312" })
       expect(response).to be_success
       expect(response).to be_test
     end
@@ -112,7 +110,7 @@ describe ActiveMerchant::Billing::InatecGateway do
     end
 
     it "captures payment" do
-      response = subject.refund(amount, {transaction_id: "43328589"})
+      response = subject.refund(amount, { transaction_id: "43328589" })
       expect(response).to be_success
       expect(response).to be_test
     end
@@ -125,7 +123,7 @@ describe ActiveMerchant::Billing::InatecGateway do
     end
 
     it "captures payment" do
-      response = subject.refund(amount, {transaction_id: "43328589"})
+      response = subject.refund(amount, { transaction_id: "43328589" })
       expect(response).not_to be_success
       expect(response).to be_test
       expect(response.message).to eq("Some Bad Stuff Happened")
