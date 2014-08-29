@@ -103,7 +103,20 @@ describe ActiveMerchant::Billing::InatecGateway do
     end
   end
 
-  describe "Payment refund" do
+  describe "Payment Reversal" do
+    before do
+      stub_request(:post, "https://www.taurus21.com/pay/backoffice/payment_reversal")
+        .to_return(status: 200, body: "transactionid=43328589&transid=43328589&status=0&errormessage=&errmsg=&amount=1.23&price=1.23&currency=EUR&orderid=1")
+    end
+
+    it "captures payment" do
+      response = subject.reversal({ transaction_id: "43328589" })
+      expect(response).to be_success
+      expect(response).to be_test
+    end
+  end
+
+  describe "Payment Refund" do
     before do
       stub_request(:post, "https://www.taurus21.com/pay/backoffice/payment_refund")
         .to_return(status: 200, body: "transactionid=43328589&transid=43328589&status=0&errormessage=&errmsg=&amount=1.23&price=1.23&currency=EUR&orderid=1")

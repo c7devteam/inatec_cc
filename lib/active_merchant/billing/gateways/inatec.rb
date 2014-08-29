@@ -17,6 +17,17 @@ module ActiveMerchant #:nodoc:
         super
       end
 
+      def preauthorize(money, payment, options={})
+        post = {}
+        add_invoice(post, money, options)
+        add_payment(post, payment)
+        add_address(post, options)
+        add_customer_data(post, options)
+        add_recurring_params(post, options)
+        add_config_data(post)
+        commit('backoffice/payment_preauthorize', post)
+      end
+
       def authorize(money, payment, options={})
         post = {}
         add_invoice(post, money, options)
@@ -48,22 +59,18 @@ module ActiveMerchant #:nodoc:
         commit('backoffice/payment_authorize', post)
       end
 
-      def preauthorize(money, payment, options={})
-        post = {}
-        add_invoice(post, money, options)
-        add_payment(post, payment)
-        add_address(post, options)
-        add_customer_data(post, options)
-        add_recurring_params(post, options)
-        add_config_data(post)
-        commit('backoffice/payment_preauthorize', post)
-      end
-
       def capture(options={})
         post = {}
         add_capture_params(post, options)
         add_config_data(post)
         commit('backoffice/payment_capture', post)
+      end
+
+      def reversal(options={})
+        post = {}
+        add_reversal_params(post, options)
+        add_config_data(post)
+        commit('backoffice/payment_reversal', post)
       end
 
       def refund(money, options={})
@@ -127,6 +134,10 @@ module ActiveMerchant #:nodoc:
       end
 
       def add_capture_params(post, options)
+        post[:transactionid] = options[:transaction_id]
+      end
+
+      def add_reversal_params(post, options)
         post[:transactionid] = options[:transaction_id]
       end
 
