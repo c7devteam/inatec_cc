@@ -28,6 +28,27 @@ module ActiveMerchant #:nodoc:
         commit('backoffice/payment_preauthorize', post)
       end
 
+      def preauthorize_with_recurring(money, payment, options={})
+        post = {}
+        add_invoice(post, money, options)
+        add_payment(post, payment)
+        add_address(post, options)
+        add_customer_data(post, options)
+        add_recurring_params(post, options)
+        add_config_data(post)
+        commit('backoffice/payment_preauthorize', post)
+      end
+      
+      def preauthorize_with_charge_recurring(money, recurring_id, options={})
+        post = {}
+        add_invoice(post, money, options)
+        add_recurring_id(post, recurring_id)
+        add_address(post, options)
+        add_customer_data(post, options)
+        add_config_data(post)
+        commit('backoffice/payment_preauthorize', post)
+      end
+
       def authorize(money, payment, options={})
         post = {}
         add_invoice(post, money, options)
