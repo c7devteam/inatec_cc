@@ -44,7 +44,7 @@ describe ActiveMerchant::Billing::InatecGateway do
   let(:credentials) do
     path = File.join('spec', 'fixtures', 'credentials.yml')
     creds = YAML.load(File.read(path))
-    { merchant_id: '21', secret: '123' } # Gateway works with symbols
+    { merchant_id: 'bonofa_test', secret: '88a7' } # Gateway works with symbols
   end
 
   let(:amount) { 123 }
@@ -60,6 +60,20 @@ describe ActiveMerchant::Billing::InatecGateway do
     end
     it 'Creates a authorize request' do
       response = subject.authorize(amount, credit_card, options)
+      expect(response).to be_success
+      expect(response).to be_test
+    end
+  end
+
+  describe 'Tx Diagnose' do
+    before do
+      stub_request(:post, 'https://www.taurus21.com/rep/backoffice/tx_diagnose')
+        .to_return(status: 200, body: "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<response>\n  <process>\n    <error_message></error_message>\n    <process_time>19.01.2015 10:25:13</process_time>\n    <status>0</status>\n  </process>\n  <transaction>\n    <transaction_id>56854852</transaction_id>\n    <transaction_status>\n      <step1>\n        <amount>1.00</amount>\n        <creation_date>31.08.2014 01:55:17</creation_date>\n        <currency>EUR</currency>\n        <custom1>123456</custom1>\n        <error_code>0</error_code>\n        <order_id>43</order_id>\n        <type>invoice</type>\n      </step1>\n    </transaction_status>\n  </transaction>\n</response>\n"
+        )
+    end
+
+    it 'Creates a diagnose request' do
+      response = subject.diagnose({ transaction_id: 56854852 })
       expect(response).to be_success
       expect(response).to be_test
     end
