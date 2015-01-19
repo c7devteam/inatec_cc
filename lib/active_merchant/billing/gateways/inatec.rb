@@ -94,6 +94,14 @@ module ActiveMerchant #:nodoc:
         commit('backoffice/payment_reversal', post)
       end
 
+      # TO DO need move to other class
+      def diagnose(options = {})
+        post = {}
+        add_diagnose_params(post, options)
+        add_config_data(post)
+        commit_rep('backoffice/tx_diagnose', post)
+      end
+
       def refund(money, options = {})
         post = {}
         add_refund_params(post, money, options)
@@ -158,6 +166,11 @@ module ActiveMerchant #:nodoc:
         post[:transactionid] = options[:transaction_id]
       end
 
+      def add_diagnose_params(post, options)
+        post[:transactionid] = options[:transaction_id]
+        post[:type] = 'tx'
+      end
+
       def add_reversal_params(post, options)
         post[:transactionid] = options[:transaction_id]
       end
@@ -175,6 +188,19 @@ module ActiveMerchant #:nodoc:
           response,
           authorization: authorization_from(response),
           test: test?
+        )
+      end
+
+      # TO DO need move to other class
+      def commit_rep(action, parameters)
+        full_url = "https://www.taurus21.com/rep/#{action}"
+        response = Hash.from_xml(ssl_post(full_url, encode_parameters(parameters)))
+        ::OpenStruct.new({
+          success?: response["response"]["process"]["status"] == '0',
+          message: response["response"]["process"]["error_message"],
+          content: ::OpenStruct.new(response["response"]),
+          authorization: authorization_from(response),
+          test?: test?}
         )
       end
 
