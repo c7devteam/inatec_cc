@@ -42,8 +42,6 @@ describe ActiveMerchant::Billing::InatecGateway do
   end
 
   let(:credentials) do
-    path = File.join('spec', 'fixtures', 'credentials.yml')
-    creds = YAML.load(File.read(path))
     { merchant_id: 'bonofa_test', secret: '88a7' } # Gateway works with symbols
   end
 
