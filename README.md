@@ -40,7 +40,7 @@ credit_card =
 # To initialize inatec gateway, you need to pass merchant id (Payment id in credentials 
 # document provided by inatec) and secret
 
-gw = ActiveMerchant::Gateways::Inatec.new(merchant_id: "your_merch_id", secret: "your_secret")
+gw = ActiveMerchant::Billing::InatecGateway.new(merchant_id: "your_merch_id", secret: "your_secret")
 
 # The Authorize request will send an authorization request to the authorization system, which will verify the
 # credit card data and credit line. If the request is verified, the credit card will be charged immediately.
